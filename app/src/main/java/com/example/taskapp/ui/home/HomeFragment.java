@@ -1,31 +1,87 @@
 package com.example.taskapp.ui.home;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentResultListener;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.taskapp.MainActivity;
 import com.example.taskapp.R;
+import com.example.taskapp.interfaces.OnItemClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Random;
 
 public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
+    private TaskAdapter taskAdapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_home, container, false);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        taskAdapter = new TaskAdapter();
+        Random r = new Random();
+        for (int i = 0; i < 10; i++) {
+           String[] randomWords = generateRandomWords(10);
+           String randomWord = randomWords[r.nextInt(randomWords.length)];
+           taskAdapter.addItem(randomWord);
+        }
+        taskAdapter.setOnItemClickListener(new OnItemClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onItemClick(int pos) {
+                String text = taskAdapter.getItem(pos);
+
+                Toast.makeText(requireContext(), text + " ", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onItemLongClick(final int pos) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                builder.setTitle("Удаление");
+                builder.setMessage("Удалить элемент списка?");
+                builder.setNegativeButton("Отмена",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+
+                            }
+                        });
+                builder.setPositiveButton("OK",
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,
+                                                int which) {
+                                taskAdapter.notifyItemRemoved(taskAdapter.getItemPosition(pos));
+                            }
+                        });
+                builder.show();
+            }
+        });
     }
 
     @Override
@@ -39,6 +95,13 @@ public class HomeFragment extends Fragment {
             }
         });
         initResultListener();
+        initList(view);
+    }
+
+    private void initList(View view) {
+        RecyclerView recyclerView  =view.findViewById(R.id.recyclerView_home);
+
+        recyclerView.setAdapter(taskAdapter);
     }
 
     private void initResultListener() {
@@ -46,7 +109,8 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
                 String text = result.getString("text");
-                Log.i("TAG", "text = " + text);
+
+                taskAdapter.addItem(text);
             }
         });
     }
@@ -54,5 +118,20 @@ public class HomeFragment extends Fragment {
     private void openForm(){
         NavController navController = Navigation.findNavController(requireActivity(),R.id.nav_host_fragment);
         navController.navigate(R.id.action_navigation_home_to_formFragment);
+    }
+    public static String[] generateRandomWords(int numberOfWords)
+    {
+        String[] randomStrings = new String[numberOfWords];
+        Random random = new Random();
+        for(int i = 0; i < numberOfWords; i++)
+        {
+            char[] word = new char[random.nextInt(8)+3]; // words of length 3 through 10. (1 and 2 letter words are boring.)
+            for(int j = 0; j < word.length; j++)
+            {
+                word[j] = (char)('a' + random.nextInt(26));
+            }
+            randomStrings[i] = new String(word);
+        }
+        return randomStrings;
     }
 }
