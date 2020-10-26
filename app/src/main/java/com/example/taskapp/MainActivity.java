@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initNavController();
+        navController.navigate(R.id.boardFragment);
     }
 
     private void initNavController() {
@@ -49,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
                     else{
                     navView.setVisibility(View.GONE);
                     }
-
             }
         });
     }

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.taskapp.MainActivity;
 import com.example.taskapp.R;
 import com.example.taskapp.interfaces.OnItemClickListener;
+import com.example.taskapp.models.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.time.LocalDateTime;
@@ -35,6 +36,7 @@ public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private TaskAdapter taskAdapter;
+    private Task task;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -49,15 +51,15 @@ public class HomeFragment extends Fragment {
         for (int i = 0; i < 10; i++) {
            String[] randomWords = generateRandomWords(10);
            String randomWord = randomWords[r.nextInt(randomWords.length)];
-           taskAdapter.addItem(randomWord);
+           Task task = new Task(randomWord, System.currentTimeMillis());
+           taskAdapter.addItem(task);
         }
         taskAdapter.setOnItemClickListener(new OnItemClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onItemClick(int pos) {
-                String text = taskAdapter.getItem(pos);
 
-                Toast.makeText(requireContext(), text + " ", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), task.getTitle() + " ", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -76,7 +78,7 @@ public class HomeFragment extends Fragment {
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog,
                                                 int which) {
-                                taskAdapter.notifyItemRemoved(taskAdapter.getItemPosition(pos));
+                                taskAdapter.removeItem(pos);
                             }
                         });
                 builder.show();
@@ -108,9 +110,8 @@ public class HomeFragment extends Fragment {
         getParentFragmentManager().setFragmentResultListener("form", getViewLifecycleOwner(), new FragmentResultListener() {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-                String text = result.getString("text");
-
-                taskAdapter.addItem(text);
+                task = (Task) result.getSerializable("text");
+                taskAdapter.addItem(task);
             }
         });
     }

@@ -15,9 +15,11 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.example.taskapp.R;
+import com.example.taskapp.models.Task;
 
 public class FormFragment extends Fragment {
     private EditText editText;
+    private Task task;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,9 +41,10 @@ public class FormFragment extends Fragment {
     }
 
     private void save() {
-        String text = editText.getText().toString().trim();
-        Bundle b = new Bundle();
-        b.putString("text", text);
+        String title = editText.getText().toString().trim();
+        task = new Task(title, System.currentTimeMillis());
+        Bundle b = new Bundle( );
+        b.putSerializable("text", task);
         getParentFragmentManager().setFragmentResult("form", b);
         close();
 

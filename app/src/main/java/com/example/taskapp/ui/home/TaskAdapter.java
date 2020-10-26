@@ -1,5 +1,6 @@
 package com.example.taskapp.ui.home;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,24 +13,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.taskapp.R;
 import com.example.taskapp.interfaces.OnItemClickListener;
+import com.example.taskapp.models.Task;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
 
-    private List<String> list = new ArrayList<>();
+    private List<Task> list = new ArrayList<>();
     TextView textTitle;
     TextView textDate;
+    Task task;
     private OnItemClickListener onItemClickListener;
 
-    public void addItem(String text) {
-        list.add(0,text);
-        notifyDataSetChanged();
+    public void addItem(Task task) {
+        list.add(0, task);
+        notifyItemInserted(0);
     }
-
 
 
     @NonNull
@@ -49,16 +54,23 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
     public int getItemCount() {
         return list.size();
     }
-    public void setOnItemClickListener(OnItemClickListener onItemClickListener){
+
+    public void setOnItemClickListener(OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
 
     }
 
-    public String getItem(int pos) {
+    public Task getItem(int pos) {
         return list.get(pos);
     }
-    public int getItemPosition(int pos){
+
+    public int getItemPosition(int pos) {
         return pos;
+    }
+
+    public void removeItem(int pos) {
+        list.remove(pos);
+        notifyItemRemoved(pos);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -83,12 +95,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.ViewHolder> {
         }
 
         @RequiresApi(api = Build.VERSION_CODES.O)
-        public void bind(String s){
-            textTitle.setText(s);
-            LocalDateTime currentTime = LocalDateTime.now();
-            DateTimeFormatter formattingTime = DateTimeFormatter.ofPattern("dd-MMM-yyyy HH:ss");
-            String formattedTime = currentTime.format(formattingTime);
-            textDate.setText(formattedTime);
+        public void bind(Task task) {
+            textTitle.setText(task.getTitle());
+            Date date = new Date(task.getCreatedAt());
+            @SuppressLint("SimpleDateFormat") DateFormat df = new SimpleDateFormat("dd-MMM-yyyy HH:ss");
+            textDate.setText(df.format(date));
         }
     }
 }
